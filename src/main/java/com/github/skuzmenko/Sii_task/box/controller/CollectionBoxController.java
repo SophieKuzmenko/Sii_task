@@ -25,4 +25,9 @@ public class CollectionBoxController {
     public  ResponseEntity<ListBoxDTO> getAllBoxes(){
         return ResponseEntity.ok(boxService.listAllBoxes());
     }
+
+    @DeleteMapping("/{boxId}")
+    public void unregisterBox(@PathVariable Long boxId){
+        boxService.deleteBox(boxId);
+    }
 }

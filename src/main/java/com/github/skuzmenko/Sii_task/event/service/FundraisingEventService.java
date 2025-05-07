@@ -45,4 +45,8 @@ public class FundraisingEventService {
     {
         return eventRepository.findById(id);
     }
+    public void saveEvent(FundraisingEvent event)
+    {
+        eventRepository.save(event);
+    }
 }

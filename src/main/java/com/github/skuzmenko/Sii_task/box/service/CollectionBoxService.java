@@ -45,4 +45,17 @@ public class CollectionBoxService {
         boxes.forEach(b->boxInfoList.add(b.toInfoDTO()));
         return new ListBoxDTO(boxInfoList);
     }
+
+    public void deleteBox(Long id){
+        Optional<CollectionBox> boxOptional = boxRepository.findById(id);
+        if (boxOptional.isEmpty())
+            throw new AbsentRecordException(String.format("Box with id '%s' was not found",id));
+        CollectionBox box = boxOptional.get();
+        // updating the box list for the event
+        FundraisingEvent event = box.getEvent();
+        event.getBoxes().remove(box);
+        eventService.saveEvent(event);
+        // deleting the box from the database:
+        boxRepository.delete(box);
+    }
 }
