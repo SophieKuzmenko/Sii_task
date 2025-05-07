@@ -14,15 +14,21 @@ public class FundraisingEvent {
     @GeneratedValue
     private Long id;
 
+
+    @Column(nullable = false)
+    private String name;
+
     @Column(nullable = false)
     private Double account;
 
+    @Column(nullable = false, columnDefinition = "NVARCHAR(3)")
     private String currency;
 
     @OneToMany(mappedBy = "event")
     private Set<CollectionBox> boxes;
 
-    public FundraisingEvent(String currency) {
+    public FundraisingEvent(String name, String currency) {
+        this.name = name;
         this.currency = currency;
         this.account = 0.0;
         boxes = new HashSet<>();
@@ -46,5 +52,13 @@ public class FundraisingEvent {
 
     public Set<CollectionBox> getBoxes() {
         return boxes;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
