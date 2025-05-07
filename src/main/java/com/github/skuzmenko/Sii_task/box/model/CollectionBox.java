@@ -25,11 +25,11 @@ public class CollectionBox {
     @JoinColumn(name="EVENT_ID")
     private FundraisingEvent event;
 
-    public CollectionBox() {
+    public CollectionBox(FundraisingEvent event) {
         plnAmount = 0.0;
         euroAmount = 0.0;
         usdAmount = 0.0;
-        event = null;
+        this.event = event;
     }
     public CollectionBoxDTO toDTO(){
         return new CollectionBoxDTO(id, plnAmount, euroAmount, usdAmount, event.getId());
@@ -59,7 +59,7 @@ public class CollectionBox {
     public void setPlnAmount(Double plnAmount) {
         this.plnAmount = plnAmount;
     }
-    
+
     public void setEuroAmount(Double euroAmount) {
         this.euroAmount = euroAmount;
     }
