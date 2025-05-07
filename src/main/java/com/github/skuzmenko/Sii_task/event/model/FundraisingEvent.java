@@ -1,9 +1,13 @@
 package com.github.skuzmenko.Sii_task.event.model;
 
+import com.github.skuzmenko.Sii_task.box.dto.CollectionBoxDTO;
 import com.github.skuzmenko.Sii_task.box.model.CollectionBox;
+import com.github.skuzmenko.Sii_task.event.dto.FundraisingEventDTO;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -32,6 +36,15 @@ public class FundraisingEvent {
         this.currency = currency;
         this.account = 0.0;
         boxes = new HashSet<>();
+    }
+
+    public FundraisingEvent() {
+    }
+
+    public FundraisingEventDTO toDTO(){
+        List<CollectionBoxDTO> boxList = new ArrayList<>();
+        boxes.forEach(b -> boxList.add(b.toDTO()));
+        return new FundraisingEventDTO(id,name,account,currency,boxList);
     }
 
     public Double getAccount() {

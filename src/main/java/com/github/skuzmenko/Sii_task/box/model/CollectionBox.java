@@ -1,5 +1,6 @@
 package com.github.skuzmenko.Sii_task.box.model;
 
+import com.github.skuzmenko.Sii_task.box.dto.CollectionBoxDTO;
 import com.github.skuzmenko.Sii_task.event.model.FundraisingEvent;
 import jakarta.persistence.*;
 
@@ -12,27 +13,34 @@ public class CollectionBox {
     private Long id;
 
     @Column(nullable = false)
+    private Double plnAmount;
+
+    @Column(nullable = false)
     private Double euroAmount;
 
     @Column(nullable = false)
     private Double usdAmount;
-
-    @Column(nullable = false)
-    private Double plnAmount;
 
     @ManyToOne
     @JoinColumn(name="EVENT_ID")
     private FundraisingEvent event;
 
     public CollectionBox() {
+        plnAmount = 0.0;
         euroAmount = 0.0;
         usdAmount = 0.0;
-        plnAmount = 0.0;
         event = null;
+    }
+    public CollectionBoxDTO toDTO(){
+        return new CollectionBoxDTO(id, plnAmount, euroAmount, usdAmount, event.getId());
     }
 
     public Long getId() {
         return id;
+    }
+
+    public Double getPlnAmount() {
+        return plnAmount;
     }
 
     public Double getEuroAmount() {
@@ -43,24 +51,21 @@ public class CollectionBox {
         return usdAmount;
     }
 
-    public Double getPlnAmount() {
-        return plnAmount;
-    }
 
     public FundraisingEvent getEvent() {
         return event;
     }
 
+    public void setPlnAmount(Double plnAmount) {
+        this.plnAmount = plnAmount;
+    }
+    
     public void setEuroAmount(Double euroAmount) {
         this.euroAmount = euroAmount;
     }
 
     public void setUsdAmount(Double usdAmount) {
         this.usdAmount = usdAmount;
-    }
-
-    public void setPlnAmount(Double plnAmount) {
-        this.plnAmount = plnAmount;
     }
 
     public void setEvent(FundraisingEvent event) {
