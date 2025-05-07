@@ -31,7 +31,9 @@ public class CollectionBoxService {
         Optional<FundraisingEvent> eventOptional = eventService.getEvent(eventId);
         if (eventOptional.isEmpty())
             throw new AbsentRecordException(String.format("Event with id %s was not found",eventId));
-        CollectionBox box = new CollectionBox(eventOptional.get());
+        FundraisingEvent event = eventOptional.get();
+        CollectionBox box = new CollectionBox(event);
+        event.getBoxes().add(box);
         boxRepository.save(box);
         return box.toDTO();
     }
