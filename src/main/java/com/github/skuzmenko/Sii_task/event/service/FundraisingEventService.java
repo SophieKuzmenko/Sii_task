@@ -9,6 +9,7 @@ import com.github.skuzmenko.Sii_task.exception.RecordAlreadyPresentException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FundraisingEventService {
@@ -22,14 +23,26 @@ public class FundraisingEventService {
     public FundraisingEventDTO addEvent(CreateEventDTO createEventDTO)
     {
         String currency = createEventDTO.getCurrency();
-        if ((currency.length()!=3)|| !currencies.contains(currency))
-            throw new CustomIllegalArgException("Currency should be one of the following:'PLN' , 'USD' or 'EUR");
+        if ((currency.length()!=3) || !currencies.contains(currency))
+            throw new CustomIllegalArgException("Currency should be one of the following:'PLN', 'USD' or 'EUR");
         // verifying an event with such name doesn't already exist
         String name = createEventDTO.getName();
-        if (eventRepository.findByName(name).isPresent())
+        if (eventPresent(name))
             throw new RecordAlreadyPresentException(String.format("Fundraising event with name '%s' is already present",name));
         FundraisingEvent event = new FundraisingEvent(name, currency);
         eventRepository.save(event);
         return event.toDTO();
+    }
+    public Boolean eventPresent(Long id)
+    {
+        return eventRepository.findById(id).isPresent();
+    }
+    public Boolean eventPresent(String name)
+    {
+        return eventRepository.findByName(name).isPresent();
+    }
+    public Optional<FundraisingEvent> getEvent(Long id)
+    {
+        return eventRepository.findById(id);
     }
 }
