@@ -1,5 +1,6 @@
 package com.github.skuzmenko.Sii_task.box.model;
 
+import com.github.skuzmenko.Sii_task.box.dto.BoxInfoDTO;
 import com.github.skuzmenko.Sii_task.box.dto.CollectionBoxDTO;
 import com.github.skuzmenko.Sii_task.event.model.FundraisingEvent;
 import jakarta.persistence.*;
@@ -25,6 +26,13 @@ public class CollectionBox {
     @JoinColumn(name="EVENT_ID")
     private FundraisingEvent event;
 
+    public CollectionBox() {
+        plnAmount = 0.0;
+        euroAmount = 0.0;
+        usdAmount = 0.0;
+        event = null;
+    }
+
     public CollectionBox(FundraisingEvent event) {
         plnAmount = 0.0;
         euroAmount = 0.0;
@@ -33,6 +41,11 @@ public class CollectionBox {
     }
     public CollectionBoxDTO toDTO(){
         return new CollectionBoxDTO(id, plnAmount, euroAmount, usdAmount, event.getId());
+    }
+    public BoxInfoDTO toInfoDTO(){
+        Boolean isAssigned = (event!=null);
+        Boolean isEmpty = (euroAmount==0) && (plnAmount==0) && (usdAmount==0);
+        return new BoxInfoDTO(isAssigned, isEmpty);
     }
 
     public Long getId() {
