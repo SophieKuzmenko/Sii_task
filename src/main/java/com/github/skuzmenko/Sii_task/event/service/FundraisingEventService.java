@@ -23,8 +23,7 @@ public class FundraisingEventService {
     public FundraisingEventDTO addEvent(CreateEventDTO createEventDTO)
     {
         String currency = createEventDTO.getCurrency();
-        if ((currency.length()!=3) || !currencies.contains(currency))
-            throw new CustomIllegalArgException("Currency should be one of the following:'PLN', 'USD' or 'EUR");
+        verifyCurrency(currency);
         // verifying an event with such name doesn't already exist
         String name = createEventDTO.getName();
         if (eventPresent(name))
@@ -44,5 +43,13 @@ public class FundraisingEventService {
     public Optional<FundraisingEvent> getEvent(Long id)
     {
         return eventRepository.findById(id);
+    }
+    public void saveEvent(FundraisingEvent event)
+    {
+        eventRepository.save(event);
+    }
+    public void verifyCurrency(String currency){
+        if ((currency.length()!=3) || !currencies.contains(currency))
+            throw new CustomIllegalArgException("Currency should be one of the following:'PLN', 'USD' or 'EUR");
     }
 }

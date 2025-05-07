@@ -1,9 +1,6 @@
 package com.github.skuzmenko.Sii_task.box.service;
 
-import com.github.skuzmenko.Sii_task.box.dto.BoxInfoDTO;
-import com.github.skuzmenko.Sii_task.box.dto.CollectionBoxDTO;
-import com.github.skuzmenko.Sii_task.box.dto.CreateBoxDTO;
-import com.github.skuzmenko.Sii_task.box.dto.ListBoxDTO;
+import com.github.skuzmenko.Sii_task.box.dto.*;
 import com.github.skuzmenko.Sii_task.box.model.CollectionBox;
 import com.github.skuzmenko.Sii_task.box.repository.CollectionBoxRepository;
 import com.github.skuzmenko.Sii_task.event.model.FundraisingEvent;
@@ -44,5 +41,45 @@ public class CollectionBoxService {
         List<BoxInfoDTO> boxInfoList = new ArrayList<>();
         boxes.forEach(b->boxInfoList.add(b.toInfoDTO()));
         return new ListBoxDTO(boxInfoList);
+    }
+
+    public void deleteBox(Long boxId){
+        CollectionBox box = getBox(boxId);
+        // updating the box list for the event
+        FundraisingEvent event = box.getEvent();
+        event.getBoxes().remove(box);
+        eventService.saveEvent(event);
+        // deleting the box from the database:
+        boxRepository.delete(box);
+    }
+
+    public CollectionBoxDTO donateToBox(Long boxId, DonationDTO donationDTO)
+    {
+        CollectionBox box = getBox(boxId);
+        String currency = donationDTO.getCurrency();
+        eventService.verifyCurrency(currency);
+        Double amount = donationDTO.getAmount();
+        switch(currency)
+        {
+            case "PLN":
+                box.setPlnAmount(box.getPlnAmount() + amount);
+                break;
+            case "EUR":
+                box.setEuroAmount(box.getEuroAmount() + amount);
+                break;
+            case "USD":
+                box.setUsdAmount(box.getUsdAmount() + amount);
+                break;
+
+        }
+        return boxRepository.save(box).toDTO();
+    }
+
+    public CollectionBox getBox(Long id)
+    {
+        Optional<CollectionBox> boxOptional = boxRepository.findById(id);
+        if (boxOptional.isEmpty())
+            throw new AbsentRecordException(String.format("Box with id '%s' was not found",id));
+        return boxOptional.get();
     }
 }
