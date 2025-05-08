@@ -55,6 +55,8 @@ public class CollectionBoxService {
     public CollectionBoxDTO donateToBox(Long boxId, DonationDTO donationDTO)
     {
         CollectionBox box = getBox(boxId);
+        // verifying the box is assigned
+        verifyAndGetBoxEvent(box);
         String currency = donationDTO.currency();
         Currency.verifyCurrency(currency);
         BigDecimal amount = donationDTO.amount();
@@ -87,14 +89,14 @@ public class CollectionBoxService {
         if (oldOwner !=null)
         {
             // trying to assign the box to the same event, no changes needed
-            if (oldOwner.getId().equals(assignBoxDTO.eventId()))
+            if (oldOwner.getName().equals(assignBoxDTO.eventName()))
                 return box.toDTO();
             // removing from the assigned boxes and saving the modified event
             oldOwner.getBoxes().remove(box);
             eventService.saveEvent(oldOwner);
         }
         //retrieving the new owner event
-        FundraisingEvent newOwner = eventService.getEvent(assignBoxDTO.eventId());
+        FundraisingEvent newOwner = eventService.getEventByName(assignBoxDTO.eventName());
         box.setEvent(newOwner);
         newOwner.getBoxes().add(box);
         // saving the changes to the event
@@ -105,9 +107,7 @@ public class CollectionBoxService {
 
     public CollectionBoxDTO transferFunds(Long boxId) {
         CollectionBox box = getBox(boxId);
-        FundraisingEvent event = box.getEvent();
-        if (event == null)
-            throw new CustomIllegalArgException(String.format("Box with id '%s' is not assigned to an event",boxId));
+        FundraisingEvent event = verifyAndGetBoxEvent(box);
         BigDecimal funds = Currency.getSumInCurrency(event.getCurrency(),
                 box.getPlnAmount(),
                 box.getEuroAmount(),
@@ -117,6 +117,13 @@ public class CollectionBoxService {
         // emptying out the box
         box.setEmptyAmounts();
         return boxRepository.save(box).toDTO();
+    }
+
+    public FundraisingEvent verifyAndGetBoxEvent(CollectionBox box){
+        FundraisingEvent event = box.getEvent();
+        if (event == null)
+            throw new CustomIllegalArgException(String.format("Box with id '%s' is not assigned to an event",box.getId()));
+        return event;
     }
 
     public CollectionBox getBox(Long id)
