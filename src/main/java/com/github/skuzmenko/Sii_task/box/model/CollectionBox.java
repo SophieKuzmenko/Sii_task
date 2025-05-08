@@ -32,9 +32,7 @@ public class CollectionBox {
     private FundraisingEvent event;
 
     public CollectionBox() {
-        plnAmount = new BigDecimal("0.0", Currency.context);
-        euroAmount = new BigDecimal("0.0", Currency.context);
-        usdAmount = new BigDecimal("0.0", Currency.context);
+        setEmptyAmounts();
         event = null;
     }
 
@@ -45,12 +43,20 @@ public class CollectionBox {
                 usdAmount.setScale(2,RoundingMode.HALF_EVEN),
                 (event==null)?null:event.getId());
     }
+
     public BoxInfoDTO toInfoDTO(){
         Boolean isAssigned = (event!=null);
         return new BoxInfoDTO(id, isAssigned, isEmpty());
     }
+
     public Boolean isEmpty(){
         return (euroAmount.compareTo(BigDecimal.ZERO)==0) && (plnAmount.compareTo(BigDecimal.ZERO)==0) && (usdAmount.compareTo(BigDecimal.ZERO)==0);
+    }
+
+    public void setEmptyAmounts(){
+        plnAmount = new BigDecimal("0.0", Currency.context);
+        euroAmount = new BigDecimal("0.0", Currency.context);
+        usdAmount = new BigDecimal("0.0", Currency.context);
     }
 
     public Long getId() {

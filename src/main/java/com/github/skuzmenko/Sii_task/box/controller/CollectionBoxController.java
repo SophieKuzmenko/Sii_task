@@ -43,4 +43,9 @@ public class CollectionBoxController {
                                                       @RequestBody AssignBoxDTO assignBoxDTO) {
         return ResponseEntity.ok(boxService.assignBox(boxId, assignBoxDTO));
     }
+
+    @GetMapping("/transfer/{boxId}")
+    public ResponseEntity<CollectionBoxDTO> transferFundsToEventAccount(@PathVariable Long boxId) {
+        return ResponseEntity.ok(boxService.transferFunds(boxId));
+    }
 }

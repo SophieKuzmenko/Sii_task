@@ -79,8 +79,8 @@ public class CollectionBoxService {
     public CollectionBoxDTO assignBox(Long boxId, AssignBoxDTO assignBoxDTO)
     {
         CollectionBox box = getBox(boxId);
-
-        if (!box.isEmpty()) // verifying box has no funds inside
+        // verifying box has no funds inside
+        if (!box.isEmpty())
             throw new CustomIllegalArgException(String.format("Box with id '%s' is not empty",boxId));
         // retrieving the event box has been assigned to before
         FundraisingEvent oldOwner = box.getEvent();
@@ -103,6 +103,22 @@ public class CollectionBoxService {
         return boxRepository.save(box).toDTO();
     }
 
+    public CollectionBoxDTO transferFunds(Long boxId) {
+        CollectionBox box = getBox(boxId);
+        FundraisingEvent event = box.getEvent();
+        if (event == null)
+            throw new CustomIllegalArgException(String.format("Box with id '%s' is not assigned to an event",boxId));
+        BigDecimal funds = Currency.getSumInCurrency(event.getCurrency(),
+                box.getPlnAmount(),
+                box.getEuroAmount(),
+                box.getUsdAmount());
+        event.setAccount(event.getAccount().add(funds));
+        eventService.saveEvent(event);
+        // emptying out the box
+        box.setEmptyAmounts();
+        return boxRepository.save(box).toDTO();
+    }
+
     public CollectionBox getBox(Long id)
     {
         Optional<CollectionBox> boxOptional = boxRepository.findById(id);
@@ -110,6 +126,4 @@ public class CollectionBoxService {
             throw new AbsentRecordException(String.format("Box with id '%s' was not found",id));
         return boxOptional.get();
     }
-
-
 }
