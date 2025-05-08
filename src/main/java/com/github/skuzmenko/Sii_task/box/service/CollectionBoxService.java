@@ -3,11 +3,16 @@ package com.github.skuzmenko.Sii_task.box.service;
 import com.github.skuzmenko.Sii_task.box.dto.*;
 import com.github.skuzmenko.Sii_task.box.model.CollectionBox;
 import com.github.skuzmenko.Sii_task.box.repository.CollectionBoxRepository;
+import com.github.skuzmenko.Sii_task.currency.Currency;
 import com.github.skuzmenko.Sii_task.event.model.FundraisingEvent;
 import com.github.skuzmenko.Sii_task.event.service.FundraisingEventService;
 import com.github.skuzmenko.Sii_task.exception.AbsentRecordException;
+import com.github.skuzmenko.Sii_task.exception.CustomIllegalArgException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,16 +28,8 @@ public class CollectionBoxService {
     }
 
 
-    public CollectionBoxDTO addBox(CreateBoxDTO createBoxDTO){
-        Long eventId = createBoxDTO.getEventId();
-        Optional<FundraisingEvent> eventOptional = eventService.getEvent(eventId);
-        if (eventOptional.isEmpty())
-            throw new AbsentRecordException(String.format("Event with id %s was not found",eventId));
-        FundraisingEvent event = eventOptional.get();
-        CollectionBox box = new CollectionBox(event);
-        event.getBoxes().add(box);
-        boxRepository.save(box);
-        return box.toDTO();
+    public CollectionBoxDTO addBox(){
+        return  boxRepository.save(new CollectionBox()).toDTO();
     }
 
     public ListBoxDTO listAllBoxes()
@@ -45,33 +42,64 @@ public class CollectionBoxService {
 
     public void deleteBox(Long boxId){
         CollectionBox box = getBox(boxId);
-        // updating the box list for the event
+        // if the box was previously assigned to an event - remove from the boxes list
         FundraisingEvent event = box.getEvent();
-        event.getBoxes().remove(box);
-        eventService.saveEvent(event);
-        // deleting the box from the database:
+        if (event!=null) {
+            event.getBoxes().remove(box);
+            eventService.saveEvent(event);
+        }
+        // deleting the box from the database
         boxRepository.delete(box);
     }
 
     public CollectionBoxDTO donateToBox(Long boxId, DonationDTO donationDTO)
     {
         CollectionBox box = getBox(boxId);
-        String currency = donationDTO.getCurrency();
-        eventService.verifyCurrency(currency);
-        Double amount = donationDTO.getAmount();
+        String currency = donationDTO.currency();
+        Currency.verifyCurrency(currency);
+        BigDecimal amount = donationDTO.amount();
+        if (amount.compareTo(BigDecimal.ZERO)<=0)
+            throw new CustomIllegalArgException("Amount of the donation should be greater than 0");
         switch(currency)
         {
             case "PLN":
-                box.setPlnAmount(box.getPlnAmount() + amount);
+                box.setPlnAmount(box.getPlnAmount().add(amount, Currency.context));
                 break;
             case "EUR":
-                box.setEuroAmount(box.getEuroAmount() + amount);
+                box.setEuroAmount(box.getEuroAmount().add(amount, Currency.context));
                 break;
             case "USD":
-                box.setUsdAmount(box.getUsdAmount() + amount);
+                box.setUsdAmount(box.getUsdAmount().add(amount, Currency.context));
                 break;
 
         }
+        return boxRepository.save(box).toDTO();
+    }
+
+    public CollectionBoxDTO assignBox(Long boxId, AssignBoxDTO assignBoxDTO)
+    {
+        CollectionBox box = getBox(boxId);
+
+        if (!box.isEmpty()) // verifying box has no funds inside
+            throw new CustomIllegalArgException(String.format("Box with id '%s' is not empty",boxId));
+        // retrieving the event box has been assigned to before
+        FundraisingEvent oldOwner = box.getEvent();
+        if (oldOwner !=null)
+        {
+            // trying to assign the box to the same event, no changes needed
+            if (oldOwner.getId().equals(assignBoxDTO.eventId()))
+                return box.toDTO();
+            // removing from the assigned boxes and saving the modified event
+            oldOwner.getBoxes().remove(box);
+            eventService.saveEvent(oldOwner);
+        }
+        //retrieving the new owner event
+        FundraisingEvent newOwner = eventService.getEvent(assignBoxDTO.eventId());
+        box.setEvent(newOwner);
+        newOwner.getBoxes().add(box);
+        // saving the changes to the event
+        eventService.saveEvent(newOwner);
+        // saving the changes to the box
         return boxRepository.save(box).toDTO();
     }
 
@@ -82,4 +110,6 @@ public class CollectionBoxService {
             throw new AbsentRecordException(String.format("Box with id '%s' was not found",id));
         return boxOptional.get();
     }
+
+
 }

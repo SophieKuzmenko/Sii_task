@@ -2,8 +2,13 @@ package com.github.skuzmenko.Sii_task.box.model;
 
 import com.github.skuzmenko.Sii_task.box.dto.BoxInfoDTO;
 import com.github.skuzmenko.Sii_task.box.dto.CollectionBoxDTO;
+import com.github.skuzmenko.Sii_task.currency.Currency;
 import com.github.skuzmenko.Sii_task.event.model.FundraisingEvent;
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 
 @Entity
@@ -13,75 +18,76 @@ public class CollectionBox {
     @GeneratedValue
     private Long id;
 
-    @Column(nullable = false)
-    private Double plnAmount;
+    @Column(nullable = false, scale = 2, precision = 12)
+    private BigDecimal plnAmount;
 
-    @Column(nullable = false)
-    private Double euroAmount;
+    @Column(nullable = false,scale = 2, precision = 12)
+    private BigDecimal euroAmount;
 
-    @Column(nullable = false)
-    private Double usdAmount;
+    @Column(nullable = false, scale = 2, precision = 12)
+    private BigDecimal usdAmount;
 
     @ManyToOne
     @JoinColumn(name="EVENT_ID")
     private FundraisingEvent event;
 
     public CollectionBox() {
-        plnAmount = 0.0;
-        euroAmount = 0.0;
-        usdAmount = 0.0;
+        plnAmount = new BigDecimal("0.0", Currency.context);
+        euroAmount = new BigDecimal("0.0", Currency.context);
+        usdAmount = new BigDecimal("0.0", Currency.context);
         event = null;
     }
 
-    public CollectionBox(FundraisingEvent event) {
-        plnAmount = 0.0;
-        euroAmount = 0.0;
-        usdAmount = 0.0;
-        this.event = event;
-    }
     public CollectionBoxDTO toDTO(){
-        return new CollectionBoxDTO(id, plnAmount, euroAmount, usdAmount, event.getId());
+        return new CollectionBoxDTO(id,
+                plnAmount.setScale(2,RoundingMode.HALF_EVEN),
+                euroAmount.setScale(2,RoundingMode.HALF_EVEN),
+                usdAmount.setScale(2,RoundingMode.HALF_EVEN),
+                (event==null)?null:event.getId());
     }
     public BoxInfoDTO toInfoDTO(){
         Boolean isAssigned = (event!=null);
-        Boolean isEmpty = (euroAmount==0) && (plnAmount==0) && (usdAmount==0);
-        return new BoxInfoDTO(isAssigned, isEmpty);
+        return new BoxInfoDTO(id, isAssigned, isEmpty());
+    }
+    public Boolean isEmpty(){
+        return (euroAmount.compareTo(BigDecimal.ZERO)==0) && (plnAmount.compareTo(BigDecimal.ZERO)==0) && (usdAmount.compareTo(BigDecimal.ZERO)==0);
     }
 
     public Long getId() {
         return id;
     }
 
-    public Double getPlnAmount() {
-        return plnAmount;
-    }
-
-    public Double getEuroAmount() {
-        return euroAmount;
-    }
-
-    public Double getUsdAmount() {
-        return usdAmount;
-    }
 
 
     public FundraisingEvent getEvent() {
         return event;
     }
 
-    public void setPlnAmount(Double plnAmount) {
-        this.plnAmount = plnAmount;
+    public BigDecimal getPlnAmount() {
+        return plnAmount;
     }
 
-    public void setEuroAmount(Double euroAmount) {
-        this.euroAmount = euroAmount;
+    public BigDecimal getEuroAmount() {
+        return euroAmount;
     }
 
-    public void setUsdAmount(Double usdAmount) {
-        this.usdAmount = usdAmount;
+    public BigDecimal getUsdAmount() {
+        return usdAmount;
     }
 
     public void setEvent(FundraisingEvent event) {
         this.event = event;
+    }
+
+    public void setPlnAmount(BigDecimal plnAmount) {
+        this.plnAmount = plnAmount;
+    }
+
+    public void setEuroAmount(BigDecimal euroAmount) {
+        this.euroAmount = euroAmount;
+    }
+
+    public void setUsdAmount(BigDecimal usdAmount) {
+        this.usdAmount = usdAmount;
     }
 }

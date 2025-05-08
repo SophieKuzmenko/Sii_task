@@ -5,6 +5,9 @@ import com.github.skuzmenko.Sii_task.box.model.CollectionBox;
 import com.github.skuzmenko.Sii_task.event.dto.FundraisingEventDTO;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,8 +25,8 @@ public class FundraisingEvent {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private Double account;
+    @Column(nullable = false, precision = 13, scale = 2)
+    private BigDecimal account;
 
     @Column(nullable = false, columnDefinition = "NVARCHAR(3)")
     private String currency;
@@ -34,7 +37,7 @@ public class FundraisingEvent {
     public FundraisingEvent(String name, String currency) {
         this.name = name;
         this.currency = currency;
-        this.account = 0.0;
+        this.account = new BigDecimal("0.0", new MathContext(13, RoundingMode.HALF_EVEN));
         boxes = new HashSet<>();
     }
 
@@ -45,14 +48,6 @@ public class FundraisingEvent {
         List<CollectionBoxDTO> boxList = new ArrayList<>();
         boxes.forEach(b -> boxList.add(b.toDTO()));
         return new FundraisingEventDTO(id,name,account,currency,boxList);
-    }
-
-    public Double getAccount() {
-        return account;
-    }
-
-    public void setAccount(Double account) {
-        this.account = account;
     }
 
     public String getCurrency() {
@@ -73,5 +68,13 @@ public class FundraisingEvent {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public BigDecimal getAccount() {
+        return account;
+    }
+
+    public void setAccount(BigDecimal account) {
+        this.account = account;
     }
 }
