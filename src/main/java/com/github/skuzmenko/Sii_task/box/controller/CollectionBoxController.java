@@ -1,7 +1,7 @@
 package com.github.skuzmenko.Sii_task.box.controller;
 
 import com.github.skuzmenko.Sii_task.box.dto.CollectionBoxDTO;
-import com.github.skuzmenko.Sii_task.box.dto.CreateBoxDTO;
+import com.github.skuzmenko.Sii_task.box.dto.AssignBoxDTO;
 import com.github.skuzmenko.Sii_task.box.dto.DonationDTO;
 import com.github.skuzmenko.Sii_task.box.dto.ListBoxDTO;
 import com.github.skuzmenko.Sii_task.box.service.CollectionBoxService;
@@ -18,8 +18,8 @@ public class CollectionBoxController {
     }
 
     @PostMapping
-    public ResponseEntity<CollectionBoxDTO> registerBox(@RequestBody CreateBoxDTO createBoxDTO){
-        return ResponseEntity.ok(boxService.addBox(createBoxDTO));
+    public ResponseEntity<CollectionBoxDTO> registerBox(){
+        return ResponseEntity.ok(boxService.addBox());
     }
 
     @GetMapping
@@ -36,5 +36,11 @@ public class CollectionBoxController {
     public ResponseEntity<CollectionBoxDTO> donateToBox(@PathVariable Long boxId,
                                                         @RequestBody DonationDTO donationDTO) {
         return ResponseEntity.ok(boxService.donateToBox(boxId, donationDTO));
+    }
+
+    @PutMapping("/assign/{boxId}")
+    public ResponseEntity<CollectionBoxDTO> assignBox(@PathVariable Long boxId,
+                                                      @RequestBody AssignBoxDTO assignBoxDTO) {
+        return ResponseEntity.ok(boxService.assignBox(boxId, assignBoxDTO));
     }
 }
