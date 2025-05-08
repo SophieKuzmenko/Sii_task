@@ -39,11 +39,11 @@ public class FundraisingEventService {
         return eventRepository.findByName(name).isPresent();
     }
 
-    public FundraisingEvent getEvent(Long id)
+    public FundraisingEvent getEventByName(String name)
     {
-        Optional<FundraisingEvent> eventOptional = eventRepository.findById(id);
+        Optional<FundraisingEvent> eventOptional = eventRepository.findByName(name);
         if (eventOptional.isEmpty())
-            throw new AbsentRecordException(String.format("Event with id '%s' not found",id));
+            throw new AbsentRecordException(String.format("Event with name '%s' was not found",name));
         return eventOptional.get();
     }
 
