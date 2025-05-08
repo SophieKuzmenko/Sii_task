@@ -50,6 +50,11 @@ public class FundraisingEvent {
         return new FundraisingEventDTO(id,name,account,currency,boxList);
     }
 
+    public String getReport() {
+        account.setScale(2,RoundingMode.HALF_EVEN);
+        return name + " " + account + " " + currency;
+    }
+
     public String getCurrency() {
         return currency;
     }

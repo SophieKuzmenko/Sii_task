@@ -6,10 +6,10 @@ import com.github.skuzmenko.Sii_task.event.dto.FundraisingEventDTO;
 import com.github.skuzmenko.Sii_task.event.model.FundraisingEvent;
 import com.github.skuzmenko.Sii_task.event.repository.FundraisingEventRepository;
 import com.github.skuzmenko.Sii_task.exception.AbsentRecordException;
-import com.github.skuzmenko.Sii_task.exception.CustomIllegalArgException;
 import com.github.skuzmenko.Sii_task.exception.RecordAlreadyPresentException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,14 +33,12 @@ public class FundraisingEventService {
         eventRepository.save(event);
         return event.toDTO();
     }
-    public Boolean eventPresent(Long id)
-    {
-        return eventRepository.findById(id).isPresent();
-    }
+
     public Boolean eventPresent(String name)
     {
         return eventRepository.findByName(name).isPresent();
     }
+
     public FundraisingEvent getEvent(Long id)
     {
         Optional<FundraisingEvent> eventOptional = eventRepository.findById(id);
@@ -48,9 +46,17 @@ public class FundraisingEventService {
             throw new AbsentRecordException(String.format("Event with id '%s' not found",id));
         return eventOptional.get();
     }
+
     public void saveEvent(FundraisingEvent event)
     {
         eventRepository.save(event);
+    }
+
+    public List<String> getAllReports() {
+        List<FundraisingEvent> events = eventRepository.findAll();
+        List<String> res = new ArrayList<>();
+        events.forEach(event->res.add(event.getReport()));
+        return res;
     }
 
 }
